@@ -10,20 +10,6 @@ struct Dictionary
 int main()
 {
     string given_str = "";
-    fstream newfile;
-    int out_numbers;
-    newfile >> out_numbers;
-    newfile.open("tpoint.txt");
-    if (newfile.is_open())
-    {
-        string tp;
-
-        while (getline(newfile, tp))
-        {
-            given_str += tp;
-        }
-        newfile.close();
-    }
 
     bool is_write, find_word, bubble_sort, search_word, split_string, output = false;
     string word_to_search = "";
@@ -33,9 +19,32 @@ int main()
     int dict_i = 0, length = 0, pos = 0;
 
     string token1;
+string tp;
 
-    split_string = true;
-    goto func_split_string;
+    fstream newfile;
+    int out_numbers;
+    newfile >> out_numbers;
+    newfile.open("tpoint.txt");
+    if (newfile.is_open())
+    {
+        func_split_string_outer:
+        if (getline(newfile, tp))
+        {
+            
+            given_str = (tp);
+            given_str+= ' ';
+            split_string = true;
+            goto func_split_string;
+
+            back_func_split_string:
+            string given_str = "";
+            pos=0;
+            goto func_split_string_outer;
+        }
+        newfile.close();
+    }
+
+    
 
 func_split_string:
     if (split_string)
@@ -46,8 +55,16 @@ func_split_string:
         {
             if ((given_str[pos] > 64 && given_str[pos] < 91) || (given_str[pos] > 96 && given_str[pos] < 123))
             {
-                token1 += given_str[pos];
-                is_write = true;
+                if ((given_str[pos] > 64 && given_str[pos] < 91))
+                {
+                    token1 += (given_str[pos] + 32);
+                    is_write = true;
+                }
+                else
+                {
+                    token1 += given_str[pos];
+                    is_write = true;
+                }
             }
 
             else if (is_write)
@@ -83,6 +100,7 @@ func_split_string:
         else
         {
             split_string = false;
+            goto back_func_split_string;
         }
     }
 
@@ -127,7 +145,7 @@ func_output:
         if (i < out_numbers)
         {
             if (dict[i].numbers > 0)
-                cout << dict[i].word << " " << dict[i].numbers << endl;
+                cout << dict[i].word << " - " << dict[i].numbers << endl;
             i++;
             goto func_output_inner;
         }

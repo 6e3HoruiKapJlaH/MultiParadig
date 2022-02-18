@@ -5,41 +5,51 @@ struct Dictionary
 {
     string word;
     int numbers;
-    int pages[100]; 
+    int pages[100];
 };
 
 int main()
 {
     string given_str = "";
-    fstream newfile;
 
+    bool is_write, find_word, bubble_sort, search_word, split_string, output = false;
+    string word_to_search = "";
+    string stop_words[3] = {"the", "for", "in"};
+    Dictionary *dict = new Dictionary[1000000];
+    int finded_word_index = -1;
+    int number_of_page = 1, number_of_line = 1;
+    int dict_i = 0, length = 0, pos = 0;
+
+    string token1;
+    string tp;
+
+    fstream newfile;
+    int out_numbers;
+    newfile >> out_numbers;
     newfile.open("tpoint.txt");
     if (newfile.is_open())
     {
-        string tp;
-
-        while (getline(newfile, tp))
+    func_split_string_outer:
+        if (getline(newfile, tp))
         {
-            given_str += (tp);
-            cout<<tp<<endl;
-            given_str+="\n";
+
+            given_str = (tp);
+            given_str += ' ';
+            split_string = true;
+            goto func_split_string;
+
+        back_func_split_string:
+            string given_str = "";
+            pos = 0;
+            if (number_of_line == 45)
+            {
+                number_of_line = 0;
+                number_of_page++;
+            }
+            goto func_split_string_outer;
         }
         newfile.close();
     }
-    cout<<given_str;
-    bool is_write = false, find_word, bubble_sort, split_string, output = false;
-    string word_to_search = "";
-    string stop_words[3] = {"the", "for", "in"};
-    Dictionary dict[1000000];
-    int finded_word_index = -1;
-    int number_of_page = 1, number_of_line = 0;
-    int dict_i = 0,  pos = 0;
-
-    string token1;
-
-    split_string = true;
-    goto func_split_string;
-
 
 func_split_string:
     if (split_string)
@@ -50,6 +60,7 @@ func_split_string:
         {
             if ((given_str[pos] > 64 && given_str[pos] < 91) || (given_str[pos] > 96 && given_str[pos] < 123))
             {
+
                 token1 += given_str[pos];
                 is_write = true;
             }
@@ -62,22 +73,19 @@ func_split_string:
             back_find_word:
                 if (finded_word_index != -1)
                 {
-                    if(dict[finded_word_index].numbers != 0){
-                        dict[finded_word_index].numbers=0;
-                    
-                    dict[finded_word_index].pages[dict[finded_word_index].numbers] = number_of_page;
-                    dict[finded_word_index].numbers++;
+                    if (dict[finded_word_index].numbers != 0)
+                    {
+
+                        dict[finded_word_index].pages[dict[finded_word_index].numbers] = number_of_page;
+                        dict[finded_word_index].numbers++;
                     }
-                    if(dict[finded_word_index].numbers == 100){
-                        dict[finded_word_index].numbers=0;
+                    if (dict[finded_word_index].numbers == 100)
+                    {
+                        dict[finded_word_index].numbers = 0;
                     }
                     finded_word_index = -1;
-                    token1 = "";
                 }
-                else if (finded_word_index == -2)
-                {
-                    token1 = "";
-                }
+
                 else
                 {
                     dict[dict_i] = (Dictionary){token1, 1, {number_of_page}};
@@ -88,28 +96,18 @@ func_split_string:
             }
             else
             {
-                is_write = false;
                 token1 = "";
             }
 
-            if(given_str[pos] == '\n'){
-                number_of_line++;
-            }
-            if(number_of_line == 45){
-                number_of_line=0;
-                number_of_page++;
-            }
-
             pos++;
-            
             goto func_split_string_inner;
         }
         else
         {
             split_string = false;
+            goto back_func_split_string;
         }
     }
-
 
     bubble_sort = true;
 func_bubble_sort:
@@ -126,9 +124,9 @@ func_bubble_sort:
         func_bubble_sort_inner:
             if (j < n - i - 1)
             {
-                if (dict[j].word < dict[j + 1].word)
+                if (dict[j].word > dict[j + 1].word)
                 {
-                    Dictionary temp = {dict[j].word, dict[j].numbers, {1,2}};
+                    Dictionary temp = dict[j];
                     dict[j] = dict[j + 1];
                     dict[j + 1] = temp;
                 }
@@ -143,7 +141,6 @@ func_bubble_sort:
         bubble_sort = false;
     }
 
-
     output = true;
 func_output:
     if (output)
@@ -153,35 +150,36 @@ func_output:
         if (i < dict_i)
         {
             if (dict[i].numbers > 0)
-                cout << dict[i].word << " " << dict[i].numbers << endl;
+            {
+                cout << dict[i].word << " - ";
+                int j = 0;
+            func_output_pages:
+                if (j < dict[i].numbers)
+                {
+                    if (j == dict[i].numbers - 1)
+                    {
+                        cout << dict[i].pages[j] << endl;
+                    }
+                    else{
+                        if(dict[i].pages[j] == dict[i].pages[j+1]){
+                            j++;
+                    goto func_output_pages;
+                        }
+                    cout << dict[i].pages[j] << ", ";
+                    }
+                    j++;
+                    goto func_output_pages;
+                }
+            }
             i++;
             goto func_output_inner;
         }
     }
 
-
 func_find_word:
     if (find_word)
     {
         int n = 0;
-
-    func_find_stop_word:
-        if (stop_words[n] == token1)
-        {
-            finded_word_index = -2;
-            find_word = false;
-            goto back_find_word;
-        }
-        else if (n < 3)
-        {
-            n++;
-            goto func_find_stop_word;
-        }
-        else
-        {
-            n = 0;
-            goto func_find_word_inner;
-        }
 
     func_find_word_inner:
         if (dict[n].word == token1)
@@ -197,7 +195,7 @@ func_find_word:
         }
         else
         {
-            finded_word_index = -1;
+            int finded_word_index = -1;
             find_word = false;
             goto back_find_word;
         }
